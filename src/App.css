@@ -1,0 +1,152 @@
+body {
+	color: #555;
+	/* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#ffffff+0,f3f3f3+50,ededed+51,
+  ffffff+100;White+Gloss+%232 */
+	background: #ffffff; /* Old browsers */
+	background: -moz-linear-gradient(
+		-45deg,
+		#ffffff 0%,
+		#f3f3f3 50%,
+		#ededed 51%,
+		#ffffff 100%
+	); /* FF3.6-15 */
+	background: -webkit-linear-gradient(
+		-45deg,
+		#ffffff 0%,
+		#f3f3f3 50%,
+		#ededed 51%,
+		#ffffff 100%
+	); /* Chrome10-25,Safari5.1-6 */
+	background: linear-gradient(
+		135deg,
+		#ffffff 0%,
+		#f3f3f3 50%,
+		#ededed 51%,
+		#ffffff 100%
+	); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffffff', endColorstr='#ffffff',GradientType=1 );
+	/* IE6-9 fallback on horizontal gradient */
+}
+
+body {
+	background: #f5f7f9;
+	font-family: 'Hind', sans-serif;
+	padding-bottom: 30px;
+	padding-top: 20px;
+}
+
+h1,
+h2,
+strong {
+	color: #333;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+	font-family: 'Artifika', serif;
+}
+
+span.highlight {
+	font-weight: bold;
+	background: yellow;
+}
+
+h1 {
+	text-align: center;
+}
+
+#content {
+	margin-top: 30px;
+}
+
+.container {
+	padding-bottom: 30px;
+}
+
+.card {
+	border: 1px;
+	border-color: darkgray;
+	border-radius: 5px;
+	border-style: solid;
+	padding: 15px;
+	background-color: white;
+	box-shadow: 5px 3px lightgray;
+	margin-bottom: 15px;
+}
+
+.card:hover {
+	box-shadow: 6px 4px lightgray;
+}
+
+.card iframe {
+	border-radius: 5px;
+	width: 100%;
+	height: 400px;
+}
+
+.card .button {
+	margin-right: 5px;
+}
+
+.card .full-script {
+	background-color: #f5f7f9;
+	padding: 10px;
+	border-radius: 5px;
+}
+
+.card .snippet {
+	margin-top: 10px;
+	margin-bottom: 10px;
+}
+
+.pagination {
+	text-align: center;
+}
+
+.pagination li a {
+	font-size: 2em;
+}
+
+#make-my-gif video {
+	width: 98%;
+}
+
+#gif-start-time {
+	width: 100%;
+}
+
+#gif-preview {
+	position: fixed;
+	top: 0;
+	left: 0;
+	height: 100vh;
+	width: 100%;
+	z-index: 10;
+	background-color: rgba(0, 0, 0, 0.5);
+	transition: display 2s;
+}
+
+#gif-preview > div {
+	display: block;
+	margin-top: 10%;
+}
+
+#gif-preview img {
+	height: auto;
+	/*align-self: center;*/
+	transition: display 2s;
+	/*margin: auto;*/
+}
+
+#gif-preview .grid-x {
+	display: flex;
+}
+
+.gif-preview-buttons {
+	/*display: block;*/
+	/*align-self: center;*/
+}
