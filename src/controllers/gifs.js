@@ -12,3 +12,7 @@ export function createGif(config, videoId, searchQuery) {
 export function deleteGif(deleteKey) {
 	return axios.delete(apiUrl + 'api/gif/' + deleteKey)
 }
+
+export function getGifsByVideo(videoId) {
+	return axios.get(apiUrl + 'api/gif_by_video/' + videoId)
+}

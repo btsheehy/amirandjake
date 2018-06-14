@@ -1,12 +1,13 @@
 import React, { Component } from 'react'
 import '../App.css'
 import { getVideoById } from '../controllers/video'
-import { createGif, deleteGif } from '../controllers/gifs'
+import { createGif, deleteGif, getGifsByVideo } from '../controllers/gifs'
 import { getScriptById } from '../controllers/scripts'
 import { withRouter } from 'react-router'
 import GifPreview from './Make-My-Gif/gif-preview'
 import VideoFrameSelector from './Make-My-Gif/video-frame-selector'
 import VideoClipPreview from './Make-My-Gif/video-clip-preview'
+import RelatedGifs from './Make-My-Gif/related-gifs'
 
 class MakeMyGif extends Component {
 	constructor(props) {
@@ -22,8 +23,11 @@ class MakeMyGif extends Component {
 			showFullScript: false,
 			video: {},
 			videoElement: null,
+			videoId: null,
+			searchQuery: null,
 			startTime: 0,
-			endTime: 100
+			endTime: 100,
+			gifsFromThisVideo: false
 		}
 		this.updateStartTime = this.updateStartTime.bind(this)
 		this.updateGifLength = this.updateGifLength.bind(this)
@@ -34,13 +38,19 @@ class MakeMyGif extends Component {
 		this.hidePreview = this.hidePreview.bind(this)
 		this.deleteMyGif = this.deleteMyGif.bind(this)
 		this.updateEndTime = this.updateEndTime.bind(this)
+		this.loadGifsFromThisVideo = this.loadGifsFromThisVideo.bind(this)
 	}
 
 	componentWillMount() {
+		this.setState({
+			videoId: this.props.match.params.id,
+			searchQuery: this.props.match.params.searchQuery
+		})
 		this.loadVideoInfo(
 			this.props.match.params.id,
 			this.props.match.params.searchQuery
 		)
+		this.loadGifsFromThisVideo(this.props.match.params.id)
 	}
 
 	makeMyGif() {
@@ -85,6 +95,12 @@ class MakeMyGif extends Component {
 				})
 			})
 		}
+	}
+
+	loadGifsFromThisVideo(videoId) {
+		getGifsByVideo(videoId).then(response => {
+			this.setState({ gifsFromThisVideo: response.data })
+		})
 	}
 
 	updateStartTime(e) {
@@ -142,6 +158,7 @@ class MakeMyGif extends Component {
 
 	hidePreview(e) {
 		this.setState({ gifUrl: false })
+		this.loadGifsFromThisVideo(this.state.videoId)
 	}
 
 	deleteMyGif() {
@@ -167,6 +184,27 @@ class MakeMyGif extends Component {
 					</div>
 					<div className="medium-8 columns">
 						<h2>{state.video.title}</h2>
+					</div>
+					<div
+						style={{ display: 'flex', justifyContent: 'center' }}
+						className="medium-2 columns"
+					>
+						<h6
+							style={{
+								textAlign: 'center',
+								margin: '0',
+								padding: '0'
+							}}
+						>
+							Other Gifs From This Video
+						</h6>
+					</div>
+				</div>
+				<div className="row">
+					<div className="medium-2 columns">
+						<br />
+					</div>
+					<div className="medium-8 columns">
 						<div className="card">
 							<div className="card-divider">
 								<h4>Step 1: Find your quote</h4>
@@ -276,7 +314,7 @@ class MakeMyGif extends Component {
 						)}
 					</div>
 					<div className="medium-2 columns">
-						<br />
+						<RelatedGifs gifs={this.state.gifsFromThisVideo} />
 					</div>
 				</div>
 			</div>
