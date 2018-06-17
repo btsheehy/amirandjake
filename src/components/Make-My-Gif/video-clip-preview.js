@@ -58,7 +58,6 @@ export default class VideoClipPreview extends Component {
 		let { state, props } = this
 		return (
 			<div>
-				<h5>Rough Preview</h5>
 				<video
 					id="video-clip-preview"
 					autoPlay

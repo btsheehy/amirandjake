@@ -116,14 +116,19 @@ export default class SearchResults extends Component {
 								) ? (
 									''
 								) : (
-									<li>
-										<a
-											newpage={pages[pages.length - 1]}
-											onClick={this.changePage}
-										>
-											. . . {pages[pages.length - 1]}
-										</a>
-									</li>
+									<div style={{ display: 'inline' }}>
+										<li>. . . </li>
+										<li>
+											<a
+												newpage={
+													pages[pages.length - 1]
+												}
+												onClick={this.changePage}
+											>
+												{pages[pages.length - 1]}
+											</a>
+										</li>
+									</div>
 								)}
 								{currentPage === pages.length ? (
 									''

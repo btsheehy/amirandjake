@@ -29,10 +29,11 @@ body {
 }
 
 body {
-	background: #f5f7f9;
+	background: #dbedf3;
 	font-family: 'Hind', sans-serif;
 	padding-bottom: 30px;
 	padding-top: 20px;
+	color: #333;
 }
 
 h1,
@@ -52,7 +53,7 @@ h6 {
 
 span.highlight {
 	font-weight: bold;
-	background: yellow;
+	background: #f73859;
 }
 
 h1 {
@@ -67,19 +68,29 @@ h1 {
 	padding-bottom: 30px;
 }
 
+.button {
+	background-color: #f73859;
+}
+
 .card {
 	border: 1px;
 	border-color: darkgray;
 	border-radius: 5px;
 	border-style: solid;
 	padding: 15px;
-	background-color: white;
-	box-shadow: 5px 3px lightgray;
+	background-color: #404b69;
+	box-shadow: 2px 1px black;
 	margin-bottom: 15px;
+	color: #dbedf3;
 }
 
 .card:hover {
-	box-shadow: 6px 4px lightgray;
+	box-shadow: 4px 2px black;
+}
+
+.card p,
+label {
+	color: #dbedf3;
 }
 
 .card iframe {
@@ -93,7 +104,7 @@ h1 {
 }
 
 .card .full-script {
-	background-color: #f5f7f9;
+	background-color: #283149;
 	padding: 10px;
 	border-radius: 5px;
 }
@@ -107,12 +118,18 @@ h1 {
 	text-align: center;
 }
 
-.pagination li a {
+.pagination li {
 	font-size: 2em;
 }
 
 #make-my-gif video {
 	width: 98%;
+}
+
+#video-clip-preview {
+	position: absolute;
+	right: 0px;
+	top: 50%;
 }
 
 #gif-start-time {

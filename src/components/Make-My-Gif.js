@@ -13,6 +13,7 @@ class MakeMyGif extends Component {
 	constructor(props) {
 		super(props)
 		this.state = {
+			caption: '',
 			isLoading: true,
 			gifDeleteKey: null,
 			gifLength: 1000,
@@ -39,6 +40,7 @@ class MakeMyGif extends Component {
 		this.deleteMyGif = this.deleteMyGif.bind(this)
 		this.updateEndTime = this.updateEndTime.bind(this)
 		this.loadGifsFromThisVideo = this.loadGifsFromThisVideo.bind(this)
+		this.updateCaption = this.updateCaption.bind(this)
 	}
 
 	componentWillMount() {
@@ -60,17 +62,25 @@ class MakeMyGif extends Component {
 			video_file_path: this.state.video.video_file_path,
 			captions: [],
 			loop_back: this.state.loopBack,
-			fade_in: false
+			fade_in: false,
+			captions: [{ text: this.state.caption }]
 		}
 		let videoId = this.props.match.params.id
 		let searchQuery = this.props.match.params.searchQuery
-		createGif(config, videoId, searchQuery).then(res => {
-			this.setState({
-				makingGif: false,
-				gifUrl: res.data.url,
-				gifDeleteKey: res.data.delete_key
+		createGif(config, videoId, searchQuery)
+			.then(res => {
+				this.setState({
+					makingGif: false,
+					gifUrl: res.data.url,
+					gifDeleteKey: res.data.delete_key
+				})
 			})
-		})
+			.catch(err => {
+				console.log(err)
+				this.setState({
+					makingGif: false
+				})
+			})
 		this.setState({ makingGif: true, gifUrl: false })
 	}
 
@@ -152,6 +162,12 @@ class MakeMyGif extends Component {
 		this.setState({ loopBack: e.target.checked })
 	}
 
+	updateCaption(e) {
+		this.setState({
+			caption: e.target.value
+		})
+	}
+
 	toggleShowFullScript() {
 		this.setState({ showFullScript: !this.state.showFullScript })
 	}
@@ -178,18 +194,22 @@ class MakeMyGif extends Component {
 		}
 		return (
 			<div id="make-my-gif" className="container">
+				<div id="video-clip-preview">
+					<VideoClipPreview
+						videoSource={state.video.muted_video_link}
+						min={state.startTime}
+						max={state.endTime}
+					/>
+				</div>
 				<div className="row">
-					<div className="medium-2 columns">
-						<br />
-					</div>
 					<div className="medium-8 columns">
 						<h2>{state.video.title}</h2>
 					</div>
 					<div
 						style={{ display: 'flex', justifyContent: 'center' }}
-						className="medium-2 columns"
+						className="medium-4 columns"
 					>
-						<h6
+						<h3
 							style={{
 								textAlign: 'center',
 								margin: '0',
@@ -197,13 +217,10 @@ class MakeMyGif extends Component {
 							}}
 						>
 							Other Gifs From This Video
-						</h6>
+						</h3>
 					</div>
 				</div>
 				<div className="row">
-					<div className="medium-2 columns">
-						<br />
-					</div>
 					<div className="medium-8 columns">
 						<div className="card">
 							<div className="card-divider">
@@ -270,19 +287,20 @@ class MakeMyGif extends Component {
 									sliderTime={state.endTime}
 								/>
 							</div>
+						</div>
+						<div className="card">
+							<div className="card-divider">
+								<h4>Step 3: Additional Options</h4>
+							</div>
 							<div className="card-section">
-								<VideoClipPreview
-									videoSource={state.video.muted_video_link}
-									min={state.startTime}
-									max={state.endTime}
+								<h6>Caption</h6>
+								<input
+									type="text"
+									onChange={this.updateCaption}
 								/>
 							</div>
-							<hr />
 							<div className="card-section">
-								<p>Additional Options</p>
-								<label htmlFor="loop-back-checkbox">
-									Loop back?
-								</label>
+								<h6>Loop back?</h6>
 								<input
 									id="loop-back-checkbox"
 									type="checkbox"
@@ -290,18 +308,14 @@ class MakeMyGif extends Component {
 									checked={this.state.loopBack}
 								/>
 							</div>
-							<div className="card-section">
-								<button
-									onClick={this.makeMyGif}
-									className="button"
-									disabled={state.makingGif}
-								>
-									{state.makingGif
-										? 'Making gif...'
-										: 'Make My Gif!'}
-								</button>
-							</div>
 						</div>
+						<button
+							onClick={this.makeMyGif}
+							className="button"
+							disabled={state.makingGif}
+						>
+							{state.makingGif ? 'Making gif...' : 'Make My Gif!'}
+						</button>
 						{state.gifUrl ? (
 							<GifPreview
 								accept={this.hidePreview}
@@ -313,7 +327,7 @@ class MakeMyGif extends Component {
 							<GifPreview hide={true} gifUrl={state.gifUrl} />
 						)}
 					</div>
-					<div className="medium-2 columns">
+					<div className="medium-4 columns">
 						<RelatedGifs gifs={this.state.gifsFromThisVideo} />
 					</div>
 				</div>
