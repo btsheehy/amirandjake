@@ -28,12 +28,47 @@ body {
 	/* IE6-9 fallback on horizontal gradient */
 }
 
+.switch-wrapper {
+	position: relative;
+}
+
+.switch-wrapper > div {
+	/*position: absolute;*/
+}
+
 body {
 	background: #dbedf3;
 	font-family: 'Hind', sans-serif;
 	padding-bottom: 30px;
-	padding-top: 20px;
+	/*padding-top: 20px;*/
 	color: #333;
+}
+
+.top-bar {
+	background-color: #283149;
+	height: 50px;
+	padding-top: 0;
+	padding-bottom: 0;
+}
+
+nav.top-bar div.item {
+	display: inline-flex;
+	justify-content: center;
+	align-items: center;
+	height: 100%;
+	font-size: 1.5em;
+	transition: background-color 0.5s;
+	/*padding-left: 3px;*/
+	/*padding-right: 3px;*/
+	width: 100px;
+}
+
+nav.top-bar div.item:hover {
+	background-color: #f73859;
+}
+
+nav.top-bar div.item a {
+	color: white;
 }
 
 h1,
@@ -126,11 +161,18 @@ label {
 	width: 98%;
 }
 
-#video-clip-preview {
+#make-my-gif .title-container {
+	height: 60px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+
+/*#video-clip-preview {
 	position: absolute;
 	right: 0px;
 	top: 50%;
-}
+}*/
 
 #gif-start-time {
 	width: 100%;

@@ -8,12 +8,15 @@ import GifPreview from './Make-My-Gif/gif-preview'
 import VideoFrameSelector from './Make-My-Gif/video-frame-selector'
 import VideoClipPreview from './Make-My-Gif/video-clip-preview'
 import RelatedGifs from './Make-My-Gif/related-gifs'
+import captionColors from '../controllers/caption-colors'
 
 class MakeMyGif extends Component {
 	constructor(props) {
 		super(props)
 		this.state = {
 			caption: '',
+			captionColor: '#ffffff',
+			captionSize: 20,
 			isLoading: true,
 			gifDeleteKey: null,
 			gifLength: 1000,
@@ -41,6 +44,9 @@ class MakeMyGif extends Component {
 		this.updateEndTime = this.updateEndTime.bind(this)
 		this.loadGifsFromThisVideo = this.loadGifsFromThisVideo.bind(this)
 		this.updateCaption = this.updateCaption.bind(this)
+		this.updateCaptionColor = this.updateCaptionColor.bind(this)
+		this.updateCaptionSize = this.updateCaptionSize.bind(this)
+		this.captionToAllCaps = this.captionToAllCaps.bind(this)
 	}
 
 	componentWillMount() {
@@ -63,7 +69,13 @@ class MakeMyGif extends Component {
 			captions: [],
 			loop_back: this.state.loopBack,
 			fade_in: false,
-			captions: [{ text: this.state.caption }]
+			captions: [
+				{
+					text: this.state.caption,
+					color: this.state.captionColor,
+					size: Number(this.state.captionSize)
+				}
+			]
 		}
 		let videoId = this.props.match.params.id
 		let searchQuery = this.props.match.params.searchQuery
@@ -168,6 +180,25 @@ class MakeMyGif extends Component {
 		})
 	}
 
+	updateCaptionColor(e) {
+		this.setState({
+			captionColor: e.target.value
+		})
+	}
+
+	updateCaptionSize(e) {
+		this.setState({
+			captionSize: e.target.value
+		})
+	}
+
+	captionToAllCaps() {
+		let caption = this.state.caption
+		this.setState({
+			caption: caption.toLocaleUpperCase()
+		})
+	}
+
 	toggleShowFullScript() {
 		this.setState({ showFullScript: !this.state.showFullScript })
 	}
@@ -194,34 +225,11 @@ class MakeMyGif extends Component {
 		}
 		return (
 			<div id="make-my-gif" className="container">
-				<div id="video-clip-preview">
-					<VideoClipPreview
-						videoSource={state.video.muted_video_link}
-						min={state.startTime}
-						max={state.endTime}
-					/>
-				</div>
 				<div className="row">
 					<div className="medium-8 columns">
-						<h2>{state.video.title}</h2>
-					</div>
-					<div
-						style={{ display: 'flex', justifyContent: 'center' }}
-						className="medium-4 columns"
-					>
-						<h3
-							style={{
-								textAlign: 'center',
-								margin: '0',
-								padding: '0'
-							}}
-						>
-							Other Gifs From This Video
-						</h3>
-					</div>
-				</div>
-				<div className="row">
-					<div className="medium-8 columns">
+						<div className="title-container">
+							<h2>{state.video.title}</h2>
+						</div>
 						<div className="card">
 							<div className="card-divider">
 								<h4>Step 1: Find your quote</h4>
@@ -287,6 +295,16 @@ class MakeMyGif extends Component {
 									sliderTime={state.endTime}
 								/>
 							</div>
+							<VideoClipPreview
+								videoSource={state.video.muted_video_link}
+								min={state.startTime}
+								max={state.endTime}
+								caption={{
+									text: state.caption,
+									color: state.captionColor,
+									size: state.captionSize
+								}}
+							/>
 						</div>
 						<div className="card">
 							<div className="card-divider">
@@ -297,6 +315,55 @@ class MakeMyGif extends Component {
 								<input
 									type="text"
 									onChange={this.updateCaption}
+									value={state.caption}
+								/>
+								<button
+									onClick={this.captionToAllCaps}
+									className="button"
+								>
+									All Caps
+								</button>
+								<label htmlFor="caption-color">
+									Caption Color
+								</label>
+								{window.Modernizr.inputtypes.color ? (
+									<input
+										type="color"
+										onChange={this.updateCaptionColor}
+										value={state.captionColor}
+										style={{
+											width: '100px',
+											height: '100px'
+										}}
+									/>
+								) : (
+									<select
+										name="caption-color"
+										id="caption-color"
+										onChange={this.updateCaptionColor}
+										value={state.captionColor}
+									>
+										{captionColors.map(color => {
+											return (
+												<option
+													key={color.name}
+													value={color.hex.toLowerCase()}
+												>
+													{color.name}
+												</option>
+											)
+										})}
+									</select>
+								)}
+
+								<label htmlFor="caption-size">
+									Caption Size
+								</label>
+								<input
+									type="number"
+									id="caption-size"
+									value={state.captionSize}
+									onChange={this.updateCaptionSize}
 								/>
 							</div>
 							<div className="card-section">
@@ -328,6 +395,9 @@ class MakeMyGif extends Component {
 						)}
 					</div>
 					<div className="medium-4 columns">
+						<div className="title-container">
+							<h4>Other Gifs From This Video</h4>
+						</div>
 						<RelatedGifs gifs={this.state.gifsFromThisVideo} />
 					</div>
 				</div>

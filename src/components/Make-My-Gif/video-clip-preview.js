@@ -57,7 +57,7 @@ export default class VideoClipPreview extends Component {
 	render() {
 		let { state, props } = this
 		return (
-			<div>
+			<div style={{ position: 'relative' }}>
 				<video
 					id="video-clip-preview"
 					autoPlay
@@ -65,7 +65,23 @@ export default class VideoClipPreview extends Component {
 					controls
 					src={props.videoSource}
 					onTimeUpdate={this.videoTimeChange}
+					style={{ position: 'relative' }}
 				/>
+				<h4
+					style={{
+						fontSize: Number(props.caption.size) * 1.5 + 'pt',
+						fontWeight: 'bold',
+						fontFamily: 'Arial',
+						color: props.caption.color,
+						textAlign: 'center',
+						position: 'absolute',
+						bottom: 0,
+						width: '100%',
+						lineHeight: 1.2
+					}}
+				>
+					{props.caption.text}
+				</h4>
 				{/*<canvas id="video-clip-preview-canvas" />*/}
 			</div>
 		)
@@ -76,3 +92,5 @@ export default class VideoClipPreview extends Component {
 // videoSource: string
 // min: number
 // max: number
+// captionText: string
+// captionColor: string

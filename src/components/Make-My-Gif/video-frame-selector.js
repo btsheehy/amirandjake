@@ -55,15 +55,20 @@ export default class VideoFrameSelector extends Component {
 				<label htmlFor={state.randomIdSlider}>
 					{props.sliderLabel}
 				</label>
-				<input
-					id={state.randomIdSlider}
-					type="range"
-					min={props.sliderMin ? props.sliderMin.toString() : '0'}
-					max={duration}
-					onChange={props.onSliderUpdate}
-					value={props.sliderTime.toString()}
-					style={{ width: '100%' }}
-				/>
+				{typeof duration === 'number' ? (
+					<input
+						id={state.randomIdSlider}
+						type="range"
+						min={props.sliderMin ? props.sliderMin.toString() : '0'}
+						max={duration}
+						onChange={props.onSliderUpdate}
+						value={props.sliderTime.toString()}
+						style={{ width: '100%' }}
+					/>
+				) : (
+					''
+				)}
+
 				<p>{this.formatTime(props.sliderTime)}</p>
 			</div>
 		)
