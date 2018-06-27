@@ -65,7 +65,7 @@ class MakeMyGif extends Component {
 		let config = {
 			start_time: this.state.startTime / 100,
 			end_time: this.state.endTime / 100,
-			video_file_path: this.state.video.video_file_path,
+			video_file_path: this.state.video.muted_video_file_path,
 			captions: [],
 			loop_back: this.state.loopBack,
 			fade_in: false,
