@@ -2,10 +2,17 @@ import React, { Component } from 'react'
 import './App.css'
 import Search from './components/Search'
 import MakeMyGif from './components/Make-My-Gif'
-import { BrowserRouter as Router, Route, Link } from 'react-router-dom'
+import { HashRouter as Router, Route, Link } from 'react-router-dom'
 import { AnimatedSwitch } from 'react-router-transition'
 
 class App extends Component {
+	constructor() {
+		super()
+		// redirect https to http because CollegeHumor is a bunch of fucks
+		if (/https/i.test(window.location.protocol)){
+			window.location = window.location.href.replace(/https/i, 'http')
+		}
+	}
 	render() {
 		return (
 			<div>

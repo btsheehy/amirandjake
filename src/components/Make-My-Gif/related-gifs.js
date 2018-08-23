@@ -21,9 +21,9 @@ export default class RelatedGifs extends Component {
 					</div>
 				)
 			} else {
-				return <div>No gifs from this video yet! </div>
+				return <p style={{textAlign: 'center'}}>No gifs from this video yet. Make the first one! </p>
 			}
-		else return <div>Loading...</div>
+		else return <p>Loading...</p>
 	}
 }
 

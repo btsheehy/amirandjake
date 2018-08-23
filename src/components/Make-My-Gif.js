@@ -6,6 +6,7 @@ import { getScriptById } from '../controllers/scripts'
 import { withRouter } from 'react-router'
 import GifPreview from './Make-My-Gif/gif-preview'
 import VideoFrameSelector from './Make-My-Gif/video-frame-selector'
+import VideoEndFrameSelector from './Make-My-Gif/video-end-frame-selector'
 import VideoClipPreview from './Make-My-Gif/video-clip-preview'
 import RelatedGifs from './Make-My-Gif/related-gifs'
 import captionColors from '../controllers/caption-colors'
@@ -127,35 +128,29 @@ class MakeMyGif extends Component {
 
 	updateStartTime(e) {
 		let val = Number(e.target.value)
-		if (val >= this.state.endTime) {
-			this.setState({
-				startTime: val,
-				endTime: val + 1000
-			})
-		} else if (this.state.endTime - val / 100 > 10) {
-			this.setState({
-				endTime: this.state.startTime + 1000,
-				startTime: val
-			})
-		} else this.setState({ startTime: val })
+		this.setState({ startTime: val })
 		if (this.state.videoElement) {
 			this.state.videoElement.currentTime = val / 100
 		}
 	}
 
 	updateEndTime(e) {
+		const {state} = this
 		let val = Number(e.target.value)
-		if (val <= this.state.startTime) {
-			// this.setState({
-			// 	startTime: val - 1,
-			// 	endTime: val
-			// })
-			return false
-		} else if (val / 100 - this.state.startTime / 100 > 10) {
-			this.setState({
-				endTime: this.state.startTime + 1000
-			})
-		} else this.setState({ endTime: val })
+		// if (val <= this.state.startTime) {
+		// 	// this.setState({
+		// 	// 	startTime: val - 1,
+		// 	// 	endTime: val
+		// 	// })
+		// 	return false
+		// } else if (val / 100 - this.state.startTime / 100 > 10) {
+		// 	this.setState({
+		// 		endTime: this.state.startTime + 1000
+		// 	})
+		// } else this.setState({ endTime: val })
+		this.setState({
+			endTime: Number(state.startTime) + val 
+		})
 	}
 
 	updateGifLength(e) {
@@ -288,11 +283,12 @@ class MakeMyGif extends Component {
 									onSliderUpdate={this.updateStartTime}
 									sliderTime={state.startTime}
 								/>
-								<VideoFrameSelector
+								<VideoEndFrameSelector
 									videoSource={state.video.muted_video_link}
-									sliderLabel="End Frame"
+									sliderLabel="Gif Length"
 									onSliderUpdate={this.updateEndTime}
-									sliderTime={state.endTime}
+									startTime={state.startTime}
+									duration={state.endTime - state.startTime}
 								/>
 							</div>
 							<VideoClipPreview
