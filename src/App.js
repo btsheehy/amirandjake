@@ -8,7 +8,6 @@ import { AnimatedSwitch } from 'react-router-transition'
 class App extends Component {
 	constructor() {
 		super()
-		// redirect https to http because CollegeHumor is a bunch of fucks
 		if (/https/i.test(window.location.protocol)){
 			window.location = window.location.href.replace(/https/i, 'http')
 		}
