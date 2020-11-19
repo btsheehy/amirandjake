@@ -1,8 +1,9 @@
-let apiUrl
+let apiUrl;
 if (/localhost/i.test(window.location.hostname)) {
-	apiUrl = 'http://localhost:80/'
+  apiUrl = "http://localhost:80/";
 } else {
-	apiUrl = 'https://jakeandamir.app/'
+  // apiUrl = 'https://jakeandamir.app/'
+  apiUrl = "http://ec2-54-201-208-75.us-west-2.compute.amazonaws.com/";
 }
 // const apiUrl = 'http://ec2-54-201-9-185.us-west-2.compute.amazonaws.com/'
-export default apiUrl
+export default apiUrl;

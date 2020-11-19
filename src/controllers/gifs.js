@@ -16,3 +16,7 @@ export function deleteGif(deleteKey) {
 export function getGifsByVideo(videoId) {
 	return axios.get(apiUrl + 'api/gif_by_video/' + videoId)
 }
+
+export function getAllGifs(){
+	return axios.get(apiUrl + 'api/all_gifs')
+}
