@@ -22,7 +22,7 @@ export default ({ result, searchedTerm }) => {
         <h4>{result.title}</h4>
       </div>
       <div className="card-section">
-        <iframe title={result.title} src={result.video_link} />
+        <iframe title={result.title} src={result.videoLink} />
       </div>
       <div className="card-section">
         <pre
