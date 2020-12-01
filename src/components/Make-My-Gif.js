@@ -1,4 +1,4 @@
-import React, { Component } from 'react'
+import React, { useReducer, useEffect } from 'react'
 import '../App.css'
 import { getVideoById } from '../controllers/video'
 import { createGif, deleteGif, getGifsByVideo } from '../controllers/gifs'
@@ -11,386 +11,339 @@ import VideoClipPreview from './Make-My-Gif/video-clip-preview'
 import RelatedGifs from './Make-My-Gif/related-gifs'
 import captionColors from '../controllers/caption-colors'
 
-class MakeMyGif extends Component {
-  constructor(props) {
-    super(props)
-    this.state = {
-      caption: '',
-      captionColor: '#ffffff',
-      captionSize: 20,
-      isLoading: true,
-      gifDeleteKey: null,
-      gifLength: 1000,
-      gifUrl: false,
-      highlightedScript: false,
-      loopBack: false,
-      makingGif: false,
-      showFullScript: false,
-      video: {},
-      videoElement: null,
-      videoId: null,
-      searchQuery: null,
-      startTime: 0,
-      endTime: 100,
-      gifsFromThisVideo: false,
-    }
-    this.updateStartTime = this.updateStartTime.bind(this)
-    this.updateGifLength = this.updateGifLength.bind(this)
-    this.videoTimeUpdate = this.videoTimeUpdate.bind(this)
-    this.makeMyGif = this.makeMyGif.bind(this)
-    this.updateLoopBack = this.updateLoopBack.bind(this)
-    this.toggleShowFullScript = this.toggleShowFullScript.bind(this)
-    this.hidePreview = this.hidePreview.bind(this)
-    this.deleteMyGif = this.deleteMyGif.bind(this)
-    this.updateEndTime = this.updateEndTime.bind(this)
-    this.loadGifsFromThisVideo = this.loadGifsFromThisVideo.bind(this)
-    this.updateCaption = this.updateCaption.bind(this)
-    this.updateCaptionColor = this.updateCaptionColor.bind(this)
-    this.updateCaptionSize = this.updateCaptionSize.bind(this)
-    this.captionToAllCaps = this.captionToAllCaps.bind(this)
-  }
-
-  componentWillMount() {
-    this.setState({
-      videoId: this.props.match.params.id,
-      searchQuery: this.props.match.params.searchQuery,
-    })
-    this.loadVideoInfo(
-      this.props.match.params.id,
-      this.props.match.params.searchQuery
-    )
-    this.loadGifsFromThisVideo(this.props.match.params.id)
-  }
-
-  makeMyGif() {
-    let config = {
-      start_time: this.state.startTime / 100,
-      end_time: this.state.endTime / 100,
-      video_file_path: this.state.video.muted_video_file_path,
-      captions: [],
-      loop_back: this.state.loopBack,
-      fade_in: false,
-      captions: [
-        {
-          text: this.state.caption,
-          color: this.state.captionColor,
-          size: Number(this.state.captionSize),
-        },
-      ],
-    }
-    let videoId = this.props.match.params.id
-    let searchQuery = this.props.match.params.searchQuery
-    createGif(config, videoId, searchQuery)
-      .then((res) => {
-        this.setState({
-          makingGif: false,
-          gifUrl: res.data.url,
-          gifDeleteKey: res.data.delete_key,
-        })
-      })
-      .catch((err) => {
-        console.log(err)
-        this.setState({
-          makingGif: false,
-        })
-      })
-    this.setState({ makingGif: true, gifUrl: false })
-  }
-
-  loadVideoInfo(id, searchQuery) {
-    getVideoById(id).then((response) => {
-      this.setState({ isLoading: false, video: response.data })
-      let getVideoElement = () => {
-        setTimeout(() => {
-          let el = document.querySelector('video#muted_video')
-          if (el) {
-            this.setState({ videoElement: el })
-            el.play()
-          } else getVideoElement()
-        }, 100)
+const reducer = (state, action) => {
+  switch (action.type) {
+    case 'fetching gifs':
+      return { ...state, gifs: [], gifsLoading: true }
+    case 'video info loaded':
+      return { ...state, isLoading: false, video: action.data.video }
+    case 'received script':
+      return { ...state, highlightedScript: action.data.script }
+    case 'loading gifs':
+      return { ...state, gifsLoading: true }
+    case 'received gifs for video':
+      return {
+        ...state,
+        gifsFromThisVideo: action.data.gifs,
+        gifsLoading: false,
       }
-      getVideoElement()
+    case 'update state':
+      return { ...state, ...action.data }
+    case 'set caption to all caps':
+      return { ...state, caption: state.caption.toLocaleUpperCase() }
+    case 'toggle show full script':
+      return { ...state, showFullScript: !state.showFullScript }
+    case 'received created gif':
+      return { ...state, makingGif: false, createdGif: action.data.gif }
+    case 'accept gif':
+      return {
+        ...state,
+        gifsFromThisVideo: [state.createdGif, ...state.gifsFromThisVideo],
+        createdGif: null,
+      }
+    case 'reject gif':
+      return { ...state, createdGif: null }
+    default:
+      console.warn('unrecognized event type', { action })
+      return state
+  }
+}
+
+const initialState = {
+  caption: '',
+  captionColor: '#ffffff',
+  captionSize: 20,
+  isLoading: true,
+  gifLength: 100,
+  createdGif: null,
+  highlightedScript: false,
+  loopBack: false,
+  makingGif: false,
+  showFullScript: false,
+  video: {},
+  videoId: null,
+  searchQuery: null,
+  startTime: 0,
+  gifsFromThisVideo: null,
+  gifsLoading: false,
+}
+
+const MakeMyGif = ({ match }) => {
+  const [state, dispatch] = useReducer(reducer, initialState)
+
+  const loadVideoInfo = (id, searchQuery) => {
+    getVideoById(id).then((response) => {
+      dispatch({ type: 'video info loaded', data: { video: response.data } })
     })
     if (searchQuery) {
       getScriptById(id, searchQuery).then((response) => {
-        this.setState({
-          highlightedScript: response.data.results[0].script,
-        })
+        dispatch({ type: 'received script', data: response.data.results[0] })
       })
     }
   }
 
-  loadGifsFromThisVideo(videoId) {
+  const loadGifsFromThisVideo = (videoId) => {
+    dispatch({ type: 'loading gifs' })
     getGifsByVideo(videoId).then((response) => {
-      this.setState({ gifsFromThisVideo: response.data })
+      dispatch({
+        type: 'received gifs for video',
+        data: { gifs: response.data },
+      })
     })
   }
 
-  updateStartTime(e) {
-    let val = Number(e.target.value)
-    let { state } = this
-    let currentLength = state.endTime - state.startTime
-    this.setState({ startTime: val, endTime: val + currentLength })
-    if (this.state.videoElement) {
-      this.state.videoElement.currentTime = val / 100
+  const updateStartTime = (e) =>
+    dispatch({
+      type: 'update state',
+      data: { startTime: Number(e.target.value) },
+    })
+
+  const updateGifLength = (e) =>
+    dispatch({
+      type: 'update state',
+      data: { gifLength: Number(e.target.value) },
+    })
+
+  const updateLoopBack = (e) =>
+    dispatch({ type: 'update state', data: { loopBack: e.target.checked } })
+
+  const updateCaption = (e) =>
+    dispatch({ type: 'update state', data: { caption: e.target.value } })
+
+  const updateCaptionColor = (e) =>
+    dispatch({
+      type: 'update state',
+      data: { captionColor: e.target.value },
+    })
+
+  const updateCaptionSize = (e) =>
+    dispatch({
+      type: 'update state',
+      data: { captionSize: e.target.value },
+    })
+
+  const setCaptionToAllCaps = () =>
+    dispatch({ type: 'set caption to all caps' })
+
+  const toggleShowFullScript = () =>
+    dispatch({ type: 'toggle show full script' })
+
+  const acceptGif = () => dispatch({ type: 'accept gif' })
+
+  const rejectGif = () => {
+    deleteGif(state.createdGif.deleteKey)
+    dispatch({ type: 'reject gif' })
+  }
+
+  const makeGif = () => {
+    const videoId = parseInt(match.params.id)
+    const { searchQuery } = match.params
+    const {
+      startTime,
+      gifLength,
+      loopBack,
+      caption,
+      captionColor,
+      captionSize,
+    } = state
+    const config = {
+      startTime: startTime / 100,
+      endTime: startTime / 100 + gifLength / 100,
+      loopBack: loopBack,
+      fadeIn: false,
+      captions: [
+        {
+          text: caption,
+          color: captionColor,
+          size: Number(captionSize),
+        },
+      ],
     }
-  }
-
-  updateEndTime(e) {
-    const { state } = this
-    let val = Number(e.target.value)
-    // if (val <= this.state.startTime) {
-    // 	// this.setState({
-    // 	// 	startTime: val - 1,
-    // 	// 	endTime: val
-    // 	// })
-    // 	return false
-    // } else if (val / 100 - this.state.startTime / 100 > 10) {
-    // 	this.setState({
-    // 		endTime: this.state.startTime + 1000
-    // 	})
-    // } else this.setState({ endTime: val })
-    this.setState({
-      endTime: Number(state.startTime) + val,
+    createGif(config, videoId, searchQuery)
+      .then((res) => {
+        dispatch({ type: 'received created gif', data: { gif: res.data } })
+      })
+      .catch((err) => {
+        console.log(err)
+        dispatch({ type: 'update state', data: { makingGif: false } })
+      })
+    dispatch({
+      type: 'update state',
+      data: { makingGif: false, createdGif: null },
     })
   }
 
-  updateGifLength(e) {
-    if (Number(e.target.value) <= 1000)
-      this.setState({ gifLength: Number(e.target.value) })
-  }
+  useEffect(() => {
+    loadVideoInfo(match.params.id, match.params.searchQuery)
+    loadGifsFromThisVideo(match.params.id)
+  }, [match.params.id, match.params.searchQuery])
 
-  videoTimeUpdate(e) {
-    let { gifLength, startTime, videoElement, endTime } = this.state
-    let { currentTime } = e.target
-    currentTime = currentTime * 100
-    if (currentTime >= endTime) videoElement.currentTime = startTime / 100
+  if (state.isLoading) {
+    return <div style={{ textAlign: 'center' }}>Loading...</div>
   }
-
-  updateLoopBack(e) {
-    this.setState({ loopBack: e.target.checked })
-  }
-
-  updateCaption(e) {
-    this.setState({
-      caption: e.target.value,
-    })
-  }
-
-  updateCaptionColor(e) {
-    this.setState({
-      captionColor: e.target.value,
-    })
-  }
-
-  updateCaptionSize(e) {
-    this.setState({
-      captionSize: e.target.value,
-    })
-  }
-
-  captionToAllCaps() {
-    let { caption } = this.state
-    this.setState({
-      caption: caption.toLocaleUpperCase(),
-    })
-  }
-
-  toggleShowFullScript() {
-    this.setState({ showFullScript: !this.state.showFullScript })
-  }
-
-  hidePreview(e) {
-    this.setState({ gifUrl: false })
-    this.loadGifsFromThisVideo(this.state.videoId)
-  }
-
-  deleteMyGif() {
-    let { gifDeleteKey } = this.state
-    deleteGif(gifDeleteKey)
-    this.setState({ gifUrl: false })
-  }
-
-  render() {
-    let { state, props } = this
-    let videoDuration = state.videoElement
-      ? state.videoElement.duration * 100
-      : null
-    let { video } = state
-    if (state.isLoading) {
-      return <div style={{ textAlign: 'center' }}>Loading...</div>
-    }
-    return (
-      <div id="make-my-gif" className="container">
-        <div className="row">
-          <div className="medium-8 columns">
-            <div className="title-container">
-              <h2>{state.video.title}</h2>
+  const { video } = state
+  return (
+    <div id="make-my-gif" className="container">
+      <div className="row">
+        <div className="medium-8 columns">
+          <div className="title-container">
+            <h2>{video.title}</h2>
+          </div>
+          <div className="card">
+            <div className="card-divider">
+              <h4>Step 1: Find your quote</h4>
             </div>
-            <div className="card">
-              <div className="card-divider">
-                <h4>Step 1: Find your quote</h4>
-              </div>
-              <div className="card-section">
-                <iframe title={video.title} src={video.video_link} />
-              </div>
-              {state.showFullScript ? (
-                <div>
-                  <button
-                    onClick={this.toggleShowFullScript}
-                    className="button"
-                  >
-                    Hide Full Script
-                  </button>
-                  <div className="card-section full-script">
-                    {state.highlightedScript ? (
-                      <p
-                        dangerouslySetInnerHTML={{
-                          __html: state.highlightedScript,
-                        }}
-                      />
-                    ) : (
-                      <p
-                        dangerouslySetInnerHTML={{
-                          __html: state.video.script,
-                        }}
-                      />
-                    )}
-                  </div>
-                </div>
-              ) : (
-                <div>
-                  <button
-                    title={video.id}
-                    onClick={this.toggleShowFullScript}
-                    className="button"
-                  >
-                    Show Full Script
-                  </button>
-                </div>
-              )}
+            <div className="card-section">
+              <iframe title={video.title} src={video.videoLink} />
             </div>
-            <div className="card">
-              <div className="card-divider">
-                <h4>Step 2: Select your clip</h4>
-              </div>
+            {state.showFullScript ? (
               <div>
-                <VideoFrameSelector
-                  videoSource={state.video.muted_video_link}
-                  sliderLabel="Start Frame"
-                  onSliderUpdate={this.updateStartTime}
-                  sliderTime={state.startTime}
-                />
-                <VideoEndFrameSelector
-                  videoSource={state.video.muted_video_link}
-                  sliderLabel="Gif Length"
-                  onSliderUpdate={this.updateEndTime}
-                  startTime={state.startTime}
-                  duration={state.endTime - state.startTime}
-                />
-              </div>
-              <VideoClipPreview
-                videoSource={state.video.muted_video_link}
-                min={state.startTime}
-                max={state.endTime}
-                caption={{
-                  text: state.caption,
-                  color: state.captionColor,
-                  size: state.captionSize,
-                }}
-              />
-            </div>
-            <div className="card">
-              <div className="card-divider">
-                <h4>Step 3: Additional Options</h4>
-              </div>
-              <div className="card-section">
-                <h6>Caption</h6>
-                <input
-                  type="text"
-                  onChange={this.updateCaption}
-                  value={state.caption}
-                />
-                <button onClick={this.captionToAllCaps} className="button">
-                  All Caps
+                <button onClick={toggleShowFullScript} className="button">
+                  Hide Full Script
                 </button>
-                <label htmlFor="caption-color">Caption Color</label>
-                {window.Modernizr.inputtypes.color ? (
-                  <input
-                    type="color"
-                    onChange={this.updateCaptionColor}
-                    value={state.captionColor}
-                    style={{
-                      width: '100px',
-                      height: '100px',
-                    }}
-                  />
-                ) : (
-                  <select
-                    name="caption-color"
-                    id="caption-color"
-                    onChange={this.updateCaptionColor}
-                    value={state.captionColor}
-                  >
-                    {captionColors.map((color) => {
-                      return (
-                        <option
-                          key={color.name}
-                          value={color.hex.toLowerCase()}
-                        >
-                          {color.name}
-                        </option>
-                      )
-                    })}
-                  </select>
-                )}
-
-                <label htmlFor="caption-size">Caption Size</label>
-                <input
-                  type="number"
-                  id="caption-size"
-                  value={state.captionSize}
-                  onChange={this.updateCaptionSize}
-                />
+                <div className="card-section full-script">
+                  {state.highlightedScript ? (
+                    <p
+                      dangerouslySetInnerHTML={{
+                        __html: state.highlightedScript,
+                      }}
+                    />
+                  ) : (
+                    <p
+                      dangerouslySetInnerHTML={{
+                        __html: video.script,
+                      }}
+                    />
+                  )}
+                </div>
               </div>
-              <div className="card-section">
-                <h6>Loop back?</h6>
-                <input
-                  id="loop-back-checkbox"
-                  type="checkbox"
-                  onChange={this.updateLoopBack}
-                  checked={this.state.loopBack}
-                />
-              </div>
-            </div>
-            <button
-              onClick={this.makeMyGif}
-              className="button"
-              disabled={state.makingGif}
-            >
-              {state.makingGif ? 'Making gif...' : 'Make My Gif!'}
-            </button>
-            {state.gifUrl ? (
-              <GifPreview
-                accept={this.hidePreview}
-                decline={this.deleteMyGif}
-                hide={false}
-                gifUrl={state.gifUrl}
-              />
             ) : (
-              <GifPreview hide={true} gifUrl={state.gifUrl} />
+              <div>
+                <button
+                  title={video.id}
+                  onClick={toggleShowFullScript}
+                  className="button"
+                >
+                  Show Full Script
+                </button>
+              </div>
             )}
           </div>
-          <div className="medium-4 columns">
-            <div className="title-container">
-              <h4>Other Gifs From This Video</h4>
+          <div className="card">
+            <div className="card-divider">
+              <h4>Step 2: Select your clip</h4>
             </div>
-            <RelatedGifs gifs={this.state.gifsFromThisVideo} />
+            <div>
+              <VideoFrameSelector
+                videoSource={video.mutedVideoLink}
+                sliderLabel="Start Frame"
+                onSliderUpdate={updateStartTime}
+                sliderTime={state.startTime}
+              />
+              <VideoEndFrameSelector
+                videoSource={video.mutedVideoLink}
+                sliderLabel="Gif Length"
+                onSliderUpdate={updateGifLength}
+                startTime={state.startTime}
+                duration={state.gifLength}
+              />
+            </div>
+            <VideoClipPreview
+              videoSource={video.mutedVideoLink}
+              min={state.startTime}
+              max={state.startTime + state.gifLength}
+              caption={{
+                text: state.caption,
+                color: state.captionColor,
+                size: state.captionSize,
+              }}
+            />
           </div>
+          <div className="card">
+            <div className="card-divider">
+              <h4>Step 3: Additional Options</h4>
+            </div>
+            <div className="card-section">
+              <h6>Caption</h6>
+              <input
+                type="text"
+                onChange={updateCaption}
+                value={state.caption}
+              />
+              <button onClick={setCaptionToAllCaps} className="button">
+                All Caps
+              </button>
+              <label htmlFor="caption-color">Caption Color</label>
+              {window.Modernizr.inputtypes.color ? (
+                <input
+                  type="color"
+                  onChange={updateCaptionColor}
+                  value={state.captionColor}
+                  style={{
+                    width: '100px',
+                    height: '100px',
+                  }}
+                />
+              ) : (
+                <select
+                  name="caption-color"
+                  id="caption-color"
+                  onChange={updateCaptionColor}
+                  value={state.captionColor}
+                >
+                  {captionColors.map((color) => {
+                    return (
+                      <option key={color.name} value={color.hex.toLowerCase()}>
+                        {color.name}
+                      </option>
+                    )
+                  })}
+                </select>
+              )}
+
+              <label htmlFor="caption-size">Caption Size</label>
+              <input
+                type="number"
+                id="caption-size"
+                value={state.captionSize}
+                onChange={updateCaptionSize}
+              />
+            </div>
+            <div className="card-section">
+              <h6>Loop back?</h6>
+              <input
+                id="loop-back-checkbox"
+                type="checkbox"
+                onChange={updateLoopBack}
+                checked={state.loopBack}
+              />
+            </div>
+          </div>
+          <button
+            onClick={makeGif}
+            className="button"
+            disabled={state.makingGif}
+          >
+            {state.makingGif ? 'Making gif...' : 'Make My Gif!'}
+          </button>
+          {state.createdGif && (
+            <GifPreview
+              accept={acceptGif}
+              decline={rejectGif}
+              hide={false}
+              gifUrl={state.createdGif.url}
+            />
+          )}
+        </div>
+        <div className="medium-4 columns">
+          <div className="title-container">
+            <h4>Other Gifs From This Video</h4>
+          </div>
+          <RelatedGifs gifs={state.gifsFromThisVideo} />
         </div>
       </div>
-    )
-  }
+    </div>
+  )
 }
 
 export default withRouter(MakeMyGif)
