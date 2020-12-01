@@ -29,6 +29,8 @@ const reducer = (state, action) => {
         searchResults: action.results,
         searchTime: action.searchTime,
       }
+    default:
+      return state
   }
 }
 

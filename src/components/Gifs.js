@@ -38,7 +38,7 @@ export default () => {
           : gifsToShow.map((gif) => {
               return (
                 <div key={gif.uuid} className="card three columns">
-                  <a target="_blank" href={gif.url}>
+                  <a target="_blank" rel="noreferrer" href={gif.url}>
                     <img src={gif.url} />
                   </a>
                 </div>
