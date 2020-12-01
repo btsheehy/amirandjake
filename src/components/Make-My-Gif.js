@@ -169,7 +169,7 @@ const MakeMyGif = ({ match }) => {
       })
     dispatch({
       type: 'update state',
-      data: { makingGif: false, createdGif: null },
+      data: { makingGif: true, createdGif: null },
     })
   }
 
