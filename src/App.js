@@ -42,6 +42,7 @@ const App = () => {
           >
             <Route exact path="/" component={Search} />
             <Route path="/make_my_gif/:id/:searchQuery" component={MakeMyGif} />
+            <Route path="/make_my_gif/:id" component={MakeMyGif} />
             <Route exact path="/gifs" component={Gifs} />
             <Route exact path="/faqs" component={Faqs} />
           </AnimatedSwitch>
