@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-const type = (val) => {
+const getType = (val) => {
   if (val === null) return 'Null'
   if (val === undefined) return 'Undefined'
   return Object.prototype.toString.call(val).slice(8, -1)
@@ -24,23 +24,20 @@ const toSnakeCase = (str) =>
     .join('_')
 
 const convertKeys = (convertFn) => (data) => {
-  if (type(data) === 'Object') {
+  if (getType(data) === 'Object') {
     const newObj = {}
     Object.keys(data).forEach(
       (key) => (newObj[convertFn(key)] = convertKeys(convertFn)(data[key]))
     )
     return newObj
-  } else if (type(data) === 'Array') return data.map(convertKeys(convertFn))
+  } else if (getType(data) === 'Array') return data.map(convertKeys(convertFn))
   return data
 }
 
 const camelizeData = convertKeys(toCamelCase)
 const snakeCaseData = convertKeys(toSnakeCase)
 
-axios.interceptors.response.use((res) => ({
-  ...res,
-  data: camelizeData(res.data),
-}))
+axios.interceptors.response.use((res) => camelizeData(res.data))
 axios.interceptors.request.use((req) => ({
   ...req,
   data: snakeCaseData(req.data),

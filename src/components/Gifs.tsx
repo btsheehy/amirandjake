@@ -1,8 +1,22 @@
 import React, { useReducer, useEffect } from 'react'
 import { getAllGifs } from '../controllers/gifs'
 import '../App.css'
+import { Gif } from '../types/gif'
 
-const reducer = (state, action) => {
+interface State {
+  gifs: Gif[]
+  gifsLoading: boolean
+  numberOfGifsToShow: number
+}
+
+type ActionType = 'fetching gifs' | 'received gifs' | 'load more gifs'
+
+interface Action {
+  type: ActionType
+  data?: Gif[]
+}
+
+const reducer = (state: State, action: Action): State => {
   switch (action.type) {
     case 'fetching gifs':
       return { ...state, gifs: [], gifsLoading: true }
@@ -15,7 +29,7 @@ const reducer = (state, action) => {
   }
 }
 
-const initialState = {
+const initialState: State = {
   gifs: [],
   gifsLoading: true,
   numberOfGifsToShow: 9,
@@ -24,12 +38,12 @@ const initialState = {
 export default () => {
   const [state, dispatch] = useReducer(reducer, initialState)
   const fetchGifs = () =>
-    getAllGifs().then((response) =>
-      dispatch({ type: 'received gifs', data: response.data })
-    )
+    getAllGifs().then((gifs) => dispatch({ type: 'received gifs', data: gifs }))
   const gifsToShow = state.gifs.slice(0, state.numberOfGifsToShow)
 
-  useEffect(() => fetchGifs(), [])
+  useEffect(() => {
+    fetchGifs()
+  }, [])
   return (
     <>
       <div id="gifs" className="ten columns centered">

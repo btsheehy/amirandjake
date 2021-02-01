@@ -1,7 +1,12 @@
 import React from 'react'
 import '../App.css'
 
-const faqs = [
+interface Faq {
+  question: string
+  answer: string
+}
+
+const faqs: Faq[] = [
   {
     question: `Didn't Jake and Amir end like... 8 years ago?`,
     answer: `Ummm...`,

@@ -4,14 +4,21 @@ import SearchBar from './Search/Search-Bar'
 import SearchResults from './Search/Search-Results'
 import { searchScripts } from '../controllers/scripts'
 
-const initialState = {
+interface State {
+  searchTerm: string
+  searchedTerm: string
+  searchResults?: []
+  searchLoading: boolean
+}
+
+const initialState: State = {
   searchTerm: '',
   searchedTerm: '',
   searchResults: null,
   searchLoading: false,
 }
 
-const reducer = (state, action) => {
+const reducer = (state, action): State => {
   switch (action.type) {
     case 'search bar change':
       return { ...state, searchTerm: action.value }
@@ -39,8 +46,8 @@ export default () => {
 
   const onSubmit = () => {
     dispatch({ type: 'submit search' })
-    searchScripts(state.searchTerm).then((response) => {
-      dispatch({ type: 'search results returned', ...response.data })
+    searchScripts(state.searchTerm).then((data) => {
+      dispatch({ type: 'search results returned', ...data })
     })
   }
   return (
