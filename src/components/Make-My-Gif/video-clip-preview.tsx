@@ -1,6 +1,14 @@
 import React, { useRef, useCallback } from 'react'
+import { Caption } from '../../types/gif'
 
-export default ({ videoSource, min, max, caption }) => {
+interface VideoClipPreviewProps {
+  videoSource: string
+  min: number
+  max: number
+  caption: Caption
+}
+
+export default ({ videoSource, min, max, caption }: VideoClipPreviewProps) => {
   const videoElement = useRef(null)
 
   const onVideoTimeChange = useCallback(
@@ -9,7 +17,7 @@ export default ({ videoSource, min, max, caption }) => {
         let { currentTime } = e.target
         currentTime = currentTime * 100
         if (currentTime >= max || currentTime <= min)
-          videoElement.current.currentTime = min / 100
+          e.currentTarget.currentTime = min / 100
       }
     },
     [min, max, videoElement]

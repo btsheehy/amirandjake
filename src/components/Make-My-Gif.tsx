@@ -1,4 +1,9 @@
-import React, { useReducer, useEffect } from 'react'
+import React, {
+  useReducer,
+  useEffect,
+  SyntheticEvent,
+  ChangeEvent,
+} from 'react'
 import '../App.css'
 import { getVideoById } from '../controllers/video'
 import { createGif, deleteGif, getGifsByVideo } from '../controllers/gifs'
@@ -10,8 +15,44 @@ import VideoEndFrameSelector from './Make-My-Gif/video-end-frame-selector'
 import VideoClipPreview from './Make-My-Gif/video-clip-preview'
 import RelatedGifs from './Make-My-Gif/related-gifs'
 import captionColors from '../controllers/caption-colors'
+import { CreatedGifResponse, Gif } from '../types/gif'
 
-const reducer = (state, action) => {
+interface State {
+  caption: string
+  captionColor: string
+  captionSize: number
+  isLoading: boolean
+  gifLength: number
+  createdGif: CreatedGifResponse | null
+  highlightedScript: string | null
+  loopBack: boolean
+  makingGif: boolean
+  showFullScript: boolean
+  video: object
+  startTime: number
+  gifsFromThisVideo: Gif[] | null
+  gifsLoading: boolean
+}
+
+type ActionType =
+  | 'fetching gifs'
+  | 'video info loaded'
+  | 'received script'
+  | 'loading gifs'
+  | 'received gifs for video'
+  | 'update state'
+  | 'set caption to all caps'
+  | 'toggle show full script'
+  | 'received created gif'
+  | 'accept gif'
+  | 'reject gif'
+
+interface Action {
+  type: ActionType
+  data?: any
+}
+
+const reducer = (state: State, action: Action) => {
   switch (action.type) {
     case 'fetching gifs':
       return { ...state, gifs: [], gifsLoading: true }
@@ -38,7 +79,10 @@ const reducer = (state, action) => {
     case 'accept gif':
       return {
         ...state,
-        gifsFromThisVideo: [state.createdGif, ...state.gifsFromThisVideo],
+        gifsFromThisVideo: [
+          state.createdGif,
+          ...(state.gifsFromThisVideo || []),
+        ],
         createdGif: null,
       }
     case 'reject gif':
@@ -49,78 +93,90 @@ const reducer = (state, action) => {
   }
 }
 
-const initialState = {
+const initialState: State = {
   caption: '',
   captionColor: '#ffffff',
   captionSize: 20,
   isLoading: true,
   gifLength: 100,
   createdGif: null,
-  highlightedScript: false,
+  highlightedScript: null,
   loopBack: false,
   makingGif: false,
   showFullScript: false,
   video: {},
-  videoId: null,
-  searchQuery: null,
   startTime: 0,
   gifsFromThisVideo: null,
   gifsLoading: false,
 }
 
-const MakeMyGif = ({ match }) => {
+interface MakeMyGifProps {
+  match: {
+    params: {
+      id: string
+      searchQuery: string
+    }
+  }
+}
+
+const MakeMyGif = ({ match }: MakeMyGifProps) => {
   useEffect(() => window.scrollTo({ top: 0, left: 0, behavior: 'smooth' }), [])
   const [state, dispatch] = useReducer(reducer, initialState)
 
-  const loadVideoInfo = (id, searchQuery) => {
-    getVideoById(id).then((response) => {
-      dispatch({ type: 'video info loaded', data: { video: response.data } })
+  const loadVideoInfo = (id: number, searchQuery: string) => {
+    getVideoById(id).then((video) => {
+      dispatch({ type: 'video info loaded', data: { video } })
     })
     if (searchQuery) {
-      getScriptById(id, searchQuery).then((response) => {
-        dispatch({ type: 'received script', data: response.data.results[0] })
+      getScriptById(id, searchQuery).then((script) => {
+        dispatch({ type: 'received script', data: script })
       })
     }
   }
 
-  const loadGifsFromThisVideo = (videoId) => {
+  const loadGifsFromThisVideo = (videoId: number) => {
     dispatch({ type: 'loading gifs' })
-    getGifsByVideo(videoId).then((response) => {
+    getGifsByVideo(videoId).then((gifs) => {
       dispatch({
         type: 'received gifs for video',
-        data: { gifs: response.data },
+        data: { gifs },
       })
     })
   }
 
-  const updateStartTime = (e) =>
+  const updateStartTime = (e: SyntheticEvent<HTMLInputElement, Event>) =>
     dispatch({
       type: 'update state',
-      data: { startTime: Number(e.target.value) },
+      data: { startTime: Number(e.currentTarget.value) },
     })
 
-  const updateGifLength = (e) =>
+  const updateGifLength = (e: SyntheticEvent<HTMLInputElement, Event>) =>
     dispatch({
       type: 'update state',
-      data: { gifLength: Number(e.target.value) },
+      data: { gifLength: Number(e.currentTarget.value) },
     })
 
-  const updateLoopBack = (e) =>
-    dispatch({ type: 'update state', data: { loopBack: e.target.checked } })
-
-  const updateCaption = (e) =>
-    dispatch({ type: 'update state', data: { caption: e.target.value } })
-
-  const updateCaptionColor = (e) =>
+  const updateLoopBack = (e: SyntheticEvent<HTMLInputElement, Event>) =>
     dispatch({
       type: 'update state',
-      data: { captionColor: e.target.value },
+      data: { loopBack: e.currentTarget.checked },
     })
 
-  const updateCaptionSize = (e) =>
+  const updateCaption = (e: SyntheticEvent<HTMLInputElement, Event>) =>
+    dispatch({ type: 'update state', data: { caption: e.currentTarget.value } })
+
+  const updateCaptionColor = (
+    e: ChangeEvent<HTMLSelectElement | HTMLInputElement>
+  ) =>
     dispatch({
       type: 'update state',
-      data: { captionSize: e.target.value },
+      data: { captionColor: e.currentTarget.value },
+    })
+
+  const updateCaptionSize = (e: SyntheticEvent<HTMLInputElement, Event>) =>
+    dispatch({
+      type: 'update state',
+      data: { captionSize: e.currentTarget.value },
     })
 
   const setCaptionToAllCaps = () =>
@@ -161,8 +217,8 @@ const MakeMyGif = ({ match }) => {
       ],
     }
     createGif(config, videoId, searchQuery)
-      .then((res) => {
-        dispatch({ type: 'received created gif', data: { gif: res.data } })
+      .then((gif) => {
+        dispatch({ type: 'received created gif', data: { gif } })
       })
       .catch((err) => {
         console.log(err)
@@ -175,8 +231,8 @@ const MakeMyGif = ({ match }) => {
   }
 
   useEffect(() => {
-    loadVideoInfo(match.params.id, match.params.searchQuery)
-    loadGifsFromThisVideo(match.params.id)
+    loadVideoInfo(Number(match.params.id), match.params.searchQuery)
+    loadGifsFromThisVideo(Number(match.params.id))
   }, [match.params.id, match.params.searchQuery])
 
   if (state.isLoading) {
@@ -275,33 +331,38 @@ const MakeMyGif = ({ match }) => {
                 All Caps
               </button>
               <label htmlFor="caption-color">Caption Color</label>
-              {window.Modernizr.inputtypes.color ? (
-                <input
-                  type="color"
-                  onChange={updateCaptionColor}
-                  value={state.captionColor}
-                  style={{
-                    width: '100px',
-                    height: '100px',
-                  }}
-                />
-              ) : (
-                <select
-                  name="caption-color"
-                  id="caption-color"
-                  onChange={updateCaptionColor}
-                  value={state.captionColor}
-                >
-                  {captionColors.map((color) => {
-                    return (
-                      <option key={color.name} value={color.hex.toLowerCase()}>
-                        {color.name}
-                      </option>
-                    )
-                  })}
-                </select>
-              )}
-
+              {
+                //@ts-ignore
+                window.Modernizr.inputtypes.color ? (
+                  <input
+                    type="color"
+                    onChange={updateCaptionColor}
+                    value={state.captionColor}
+                    style={{
+                      width: '100px',
+                      height: '100px',
+                    }}
+                  />
+                ) : (
+                  <select
+                    name="caption-color"
+                    id="caption-color"
+                    onChange={updateCaptionColor}
+                    value={state.captionColor}
+                  >
+                    {captionColors.map((color) => {
+                      return (
+                        <option
+                          key={color.name}
+                          value={color.hex.toLowerCase()}
+                        >
+                          {color.name}
+                        </option>
+                      )
+                    })}
+                  </select>
+                )
+              }
               <label htmlFor="caption-size">Caption Size</label>
               <input
                 type="number"

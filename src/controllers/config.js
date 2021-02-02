@@ -37,7 +37,10 @@ const convertKeys = (convertFn) => (data) => {
 const camelizeData = convertKeys(toCamelCase)
 const snakeCaseData = convertKeys(toSnakeCase)
 
-axios.interceptors.response.use((res) => camelizeData(res.data))
+axios.interceptors.response.use((res) => ({
+  ...res,
+  data: camelizeData(res.data),
+}))
 axios.interceptors.request.use((req) => ({
   ...req,
   data: snakeCaseData(req.data),

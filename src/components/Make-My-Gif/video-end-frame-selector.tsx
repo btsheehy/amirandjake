@@ -1,8 +1,15 @@
-import React, { useMemo, useRef, useEffect } from 'react'
+import React, { useMemo, useRef, useEffect, SyntheticEvent } from 'react'
 
-const formatDuration = (d) => {
-  d = Number(d)
+const formatDuration = (d: number) => {
   return (d / 100).toFixed(2) + ' seconds'
+}
+
+interface VideoEndFrameSelectorProps {
+  startTime: number
+  duration: number
+  videoSource: string
+  sliderLabel: string
+  onSliderUpdate: (e: SyntheticEvent<HTMLInputElement, Event>) => any
 }
 
 export default ({
@@ -11,8 +18,8 @@ export default ({
   videoSource,
   sliderLabel,
   onSliderUpdate,
-}) => {
-  const videoElement = useRef(null)
+}: VideoEndFrameSelectorProps) => {
+  const videoElement = useRef<HTMLVideoElement>(null)
   const sliderId = useMemo(
     () => '_' + Math.random().toString().replace('.', ''),
     []

@@ -1,15 +1,21 @@
 import React, { useState } from 'react'
 import { getScriptById } from '../../controllers/scripts'
 import { Link } from 'react-router-dom'
+import { ScriptSearchResult } from '../../types/script'
 
-export default ({ result, searchedTerm }) => {
-  const [scriptText, setScriptText] = useState(null)
+interface SearchResultCardProps {
+  result: ScriptSearchResult
+  searchedTerm: string
+}
+
+export default ({ result, searchedTerm }: SearchResultCardProps) => {
+  const [scriptText, setScriptText] = useState<string | null>(null)
   const [showFullScript, setShowFullScript] = useState(false)
 
   const toggleShowFullScript = () => {
     if (!scriptText) {
-      getScriptById(result.id, searchedTerm).then((response) => {
-        setScriptText(response.data.results[0].script)
+      getScriptById(result.id, searchedTerm).then((script) => {
+        setScriptText(script.script)
       })
     }
     setShowFullScript(!showFullScript)
@@ -51,7 +57,7 @@ export default ({ result, searchedTerm }) => {
       ) : (
         <div>
           <button
-            title={result.id}
+            title={result.id.toString()}
             onClick={toggleShowFullScript}
             className="button"
           >

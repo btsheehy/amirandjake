@@ -10,3 +10,8 @@ export interface ScriptSearchResult {
   snippet: string
   videoLink: string
 }
+
+export interface ScriptSearchResultsRoot {
+  searchTime: number
+  results: ScriptSearchResult[]
+}

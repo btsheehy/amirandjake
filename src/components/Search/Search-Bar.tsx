@@ -1,14 +1,27 @@
-import React from 'react'
+import React, { ChangeEvent, KeyboardEvent } from 'react'
 
-export default ({ onSubmit, onChange, searchLoading, searchTerm }) => {
-  const onKeyPress = (e) => (e.key === 'Enter' ? onSubmit() : null)
+interface SearchBarProps {
+  onSubmit: () => void
+  onChange: (e: ChangeEvent<HTMLInputElement>) => void
+  searchLoading: boolean
+  searchTerm: string
+}
+
+export default ({
+  onSubmit,
+  onChange,
+  searchLoading,
+  searchTerm,
+}: SearchBarProps) => {
+  const onKeyDown = (e: KeyboardEvent<HTMLInputElement>) =>
+    e.key === 'Enter' ? onSubmit() : null
   return (
     <div>
       <div className="medium-10 columns">
         <input
           placeholder="Search Scripts!"
           onChange={onChange}
-          onKeyPress={onKeyPress}
+          onKeyDown={onKeyDown}
           type="text"
           value={searchTerm}
         />

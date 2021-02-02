@@ -11,10 +11,10 @@ interface State {
 
 type ActionType = 'fetching gifs' | 'received gifs' | 'load more gifs'
 
-interface Action {
-  type: ActionType
-  data?: Gif[]
-}
+type Action =
+  | { type: 'fetching gifs' }
+  | { type: 'received gifs'; data: Gif[] }
+  | { type: 'load more gifs' }
 
 const reducer = (state: State, action: Action): State => {
   switch (action.type) {

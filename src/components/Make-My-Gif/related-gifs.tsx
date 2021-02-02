@@ -1,6 +1,7 @@
 import React from 'react'
+import { Gif } from '../../types/gif'
 
-export default ({ gifs }) => {
+export default ({ gifs }: { gifs: Gif[] | null }) => {
   if (gifs)
     if (gifs.length) {
       return (

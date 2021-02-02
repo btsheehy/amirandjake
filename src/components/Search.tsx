@@ -3,12 +3,14 @@ import '../App.css'
 import SearchBar from './Search/Search-Bar'
 import SearchResults from './Search/Search-Results'
 import { searchScripts } from '../controllers/scripts'
+import { ScriptSearchResult } from '../types/script'
 
 interface State {
   searchTerm: string
   searchedTerm: string
-  searchResults?: []
+  searchResults: ScriptSearchResult[] | null
   searchLoading: boolean
+  searchTime: number | null
 }
 
 const initialState: State = {
@@ -16,9 +18,19 @@ const initialState: State = {
   searchedTerm: '',
   searchResults: null,
   searchLoading: false,
+  searchTime: null,
 }
 
-const reducer = (state, action): State => {
+type Action =
+  | { type: 'search bar change'; value: string }
+  | { type: 'submit search'; value?: string }
+  | {
+      type: 'search results returned'
+      results: ScriptSearchResult[]
+      searchTime: number
+    }
+
+const reducer = (state: State, action: Action): State => {
   switch (action.type) {
     case 'search bar change':
       return { ...state, searchTerm: action.value }

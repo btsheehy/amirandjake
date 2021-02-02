@@ -1,6 +1,13 @@
 import React from 'react'
 
-export default ({ hide, gifUrl, decline, accept }) => {
+interface GifPreviewProps {
+  hide: boolean
+  gifUrl: string
+  decline: () => void
+  accept: () => void
+}
+
+export default ({ hide, gifUrl, decline, accept }: GifPreviewProps) => {
   return (
     <div style={{ display: hide ? 'none' : '' }} id="gif-preview">
       <div>
